@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS product;
 DROP TABLE IF EXISTS history;
+DROP TABLE IF EXISTS sessions;
 
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,5 +30,13 @@ CREATE TABLE history (
     action TEXT NOT NULL CHECK (action IN ('buy', 'sell')),
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES product (id),
+    FOREIGN KEY (user_id) REFERENCES user (id)
+);
+
+CREATE TABLE sessions (
+    id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires TIMESTAMP NOT NULL,
     FOREIGN KEY (user_id) REFERENCES user (id)
 );
