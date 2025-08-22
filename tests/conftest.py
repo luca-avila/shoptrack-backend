@@ -1,10 +1,8 @@
 import os
+import sys
 import tempfile
 
 import pytest
-
-import sys
-import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from shoptrack import create_app
 from shoptrack.db import get_db, init_db

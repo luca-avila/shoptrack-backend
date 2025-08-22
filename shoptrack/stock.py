@@ -203,7 +203,9 @@ def get_history():
     if not history:
         return jsonify({'error': 'No transaction history found'}), 404
     
-    return jsonify(history)
+    # Convert SQLite Row objects to dictionaries
+    history_list = [dict(record) for record in history]
+    return jsonify(history_list)
 
 @bp.route('/<int:id>/history', methods=['GET'])
 @login_required
@@ -225,4 +227,6 @@ def get_product_history(id):
     if not history:
         return jsonify({'error': 'No transaction history found for this product'}), 404
     
-    return jsonify(history)
+    # Convert SQLite Row objects to dictionaries
+    history_list = [dict(record) for record in history]
+    return jsonify(history_list)

@@ -76,3 +76,24 @@ def test_remove_stock(client):
                             headers=headers)
     assert response.status_code == 200
     assert b'Stock removed successfully' in response.data
+
+def test_get_history(client):
+    token = get_test_user_token(client)
+    headers = {'Authorization': f'Bearer {token}'}
+    
+    response = client.get('/stock/history', headers=headers)
+    assert response.status_code == 200
+    data = response.get_json()
+    assert isinstance(data, list)
+    # Should have at least one history record from data.sql
+
+def test_get_product_history(client):
+    token = get_test_user_token(client)
+    headers = {'Authorization': f'Bearer {token}'}
+    
+    # Use existing test product (ID 1 from data.sql)
+    response = client.get('/stock/1/history', headers=headers)
+    assert response.status_code == 200
+    data = response.get_json()
+    assert isinstance(data, list)
+    # Should have at least one history record for this product
