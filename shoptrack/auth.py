@@ -126,5 +126,13 @@ def login_required(f):
         if not Token(token).verify():
             return jsonify({'error': 'Unauthorized'}), 401
         
+        # Get the user ID from the session and set it on g
+        db = get_db()
+        session = db.execute('SELECT user_id FROM sessions WHERE id = ?', (token,)).fetchone()
+        if session:
+            g.user_id = session['user_id']
+        else:
+            return jsonify({'error': 'Unauthorized'}), 401
+        
         return f(*args, **kwargs)
     return decorated_function

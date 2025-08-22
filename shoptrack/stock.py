@@ -20,7 +20,9 @@ def get_stock():
     if not products:
         return jsonify({'error': 'No products found'}), 404
     
-    return jsonify(products)
+    # Convert SQLite Row objects to dictionaries
+    products_list = [dict(product) for product in products]
+    return jsonify(products_list)
 
 @bp.route('/<int:id>', methods=['GET'])
 @login_required
@@ -31,7 +33,8 @@ def get_product(id):
     if not product:
         return jsonify({'error': 'Product not found'}), 404
     
-    return jsonify(product)
+    # Convert SQLite Row object to dictionary
+    return jsonify(dict(product))
 
 @bp.route('/', methods=['POST'])
 @login_required

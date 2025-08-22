@@ -17,3 +17,10 @@ dependencies = [
 where = ["."]
 include = ["shoptrack*"]
 exclude = ["instance*", "tests*", "env*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["shoptrack"]
