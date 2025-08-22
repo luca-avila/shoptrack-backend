@@ -12,3 +12,8 @@ dependencies = [
     "Flask>=2.3.0",
     "Werkzeug>=2.3.0",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["shoptrack*"]
+exclude = ["instance*", "tests*", "env*"]
