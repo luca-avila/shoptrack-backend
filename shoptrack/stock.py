@@ -48,10 +48,20 @@ def create_product():
     
     try:
         db = get_db()
-        db.execute(
+        # Insert the product
+        cursor = db.execute(
             'INSERT INTO product (name, stock, price, description, owner_id) VALUES (?, ?, ?, ?, ?)',
             (data['name'], data['stock'], data['price'], data.get('description'), g.user_id)
         )
+        product_id = cursor.lastrowid
+        
+        # Record initial stock as a 'buy' transaction if stock > 0
+        if data['stock'] > 0:
+            db.execute(
+                'INSERT INTO history (product_id, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?)',
+                (product_id, g.user_id, data['price'], data['stock'], 'buy')
+            )
+        
         db.commit()
         return jsonify({'message': 'Product created successfully.'}), 201
     except Exception as e:
@@ -122,10 +132,18 @@ def add_stock(id):
     
     try:
         db = get_db()
+        # Update stock
         db.execute(
             'UPDATE product SET stock = stock + ? WHERE id = ? AND owner_id = ?',
             (data['stock'], id, g.user_id)
         )
+        
+        # Record 'buy' transaction in history
+        db.execute(
+            'INSERT INTO history (product_id, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?)',
+            (id, g.user_id, product['price'], data['stock'], 'buy')
+        )
+        
         db.commit()
         return jsonify({'message': 'Stock added successfully.'}), 200
     except Exception as e:
@@ -150,11 +168,58 @@ def remove_stock(id):
     
     try:
         db = get_db()
+        # Update stock
         db.execute(
             'UPDATE product SET stock = stock - ? WHERE id = ? AND owner_id = ?',
             (data['stock'], id, g.user_id)
         )
+        
+        # Record 'sell' transaction in history
+        db.execute(
+            'INSERT INTO history (product_id, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?)',
+            (id, g.user_id, product['price'], data['stock'], 'sell')
+        )
+        
         db.commit()
         return jsonify({'message': 'Stock removed successfully.'}), 200
     except Exception as e:
         return jsonify({'error': 'Failed to remove stock'}), 500
+
+@bp.route('/history', methods=['GET'])
+@login_required
+def get_history():
+    db = get_db()
+    history = db.execute('''
+        SELECT h.*, p.name as product_name 
+        FROM history h 
+        JOIN product p ON h.product_id = p.id 
+        WHERE h.user_id = ? 
+        ORDER BY h.created DESC
+    ''', (g.user_id,)).fetchall()
+
+    if not history:
+        return jsonify({'error': 'No transaction history found'}), 404
+    
+    return jsonify(history)
+
+@bp.route('/<int:id>/history', methods=['GET'])
+@login_required
+def get_product_history(id):
+    # Validate product ownership
+    is_valid, product = validate_product_ownership(id)
+    if not is_valid:
+        return jsonify({'error': product}), 404
+    
+    db = get_db()
+    history = db.execute('''
+        SELECT h.*, p.name as product_name 
+        FROM history h 
+        JOIN product p ON h.product_id = p.id 
+        WHERE h.product_id = ? AND h.user_id = ? 
+        ORDER BY h.created DESC
+    ''', (id, g.user_id)).fetchall()
+
+    if not history:
+        return jsonify({'error': 'No transaction history found for this product'}), 404
+    
+    return jsonify(history)
