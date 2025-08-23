@@ -24,6 +24,7 @@ CREATE TABLE product (
 CREATE TABLE history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id INTEGER NOT NULL,
+    product_name TEXT NOT NULL,
     user_id INTEGER NOT NULL,
     price REAL NOT NULL CHECK (price > 0),
     quantity INTEGER NOT NULL CHECK (quantity > 0),

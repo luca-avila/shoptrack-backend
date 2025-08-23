@@ -71,3 +71,27 @@ def validate_stock_data(data):
         return False, "Stock must be a positive integer"
     
     return True, None
+
+def validate_user_data(data):
+    if 'username' not in data:
+        return False, "Missing required field: username"
+    
+    if 'password' not in data:
+        return False, "Missing required field: password"
+    
+    username = data['username'].strip()
+    password = data['password']
+    
+    if len(username) < 3:
+        return False, "Username must be at least 3 characters long"
+    
+    if len(password) < 6:
+        return False, "Password must be at least 6 characters long"
+    
+    if not username:
+        return False, "Username cannot be empty"
+    
+    if not password:
+        return False, "Password cannot be empty"
+    
+    return True, None

@@ -9,6 +9,7 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from shoptrack.db import get_db
+from shoptrack.validation import validate_user_data, validate_json_request
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -35,17 +36,17 @@ class Token:
 
 @bp.route('/register', methods=['POST'])
 def register():
-    data = request.json
-    db = get_db()
-    error = None
-
-    if not data.get('username'):
-        error = 'Username is required.'
-    elif not data.get('password'):
-        error = 'Password is required.'
-
-    if error is not None:
+    is_valid, result = validate_json_request()
+    if not is_valid:
+        return jsonify({'error': result}), 400
+    
+    data = result
+    
+    is_valid, error = validate_user_data(data)
+    if not is_valid:
         return jsonify({'error': error}), 400
+    
+    db = get_db()
     
     try:
         db.execute(
@@ -62,17 +63,17 @@ def register():
 
 @bp.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    db = get_db()
-    error = None
-
-    if not data.get('username'):
-        error = 'Username is required.'
-    elif not data.get('password'):
-        error = 'Password is required.'
-
-    if error is not None:
+    is_valid, result = validate_json_request()
+    if not is_valid:
+        return jsonify({'error': result}), 400
+    
+    data = result
+    
+    is_valid, error = validate_user_data(data)
+    if not is_valid:
         return jsonify({'error': error}), 400
+    
+    db = get_db()
 
     user = db.execute('SELECT * FROM user WHERE username = ?', (data['username'],)).fetchone()
     if user is None:

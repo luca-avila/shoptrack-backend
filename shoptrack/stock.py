@@ -61,8 +61,8 @@ def create_product():
         # Record initial stock as a 'buy' transaction if stock > 0
         if data['stock'] > 0:
             db.execute(
-                'INSERT INTO history (product_id, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?)',
-                (product_id, g.user_id, data['price'], data['stock'], 'buy')
+                'INSERT INTO history (product_id, product_name, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?, ?)',
+                (product_id, data['name'], g.user_id, data['price'], data['stock'], 'buy')
             )
         
         db.commit()
@@ -143,8 +143,8 @@ def add_stock(id):
         
         # Record 'buy' transaction in history
         db.execute(
-            'INSERT INTO history (product_id, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?)',
-            (id, g.user_id, product['price'], data['stock'], 'buy')
+            'INSERT INTO history (product_id, product_name, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?, ?)',
+            (id, product['name'], g.user_id, product['price'], data['stock'], 'buy')
         )
         
         db.commit()
@@ -179,8 +179,8 @@ def remove_stock(id):
         
         # Record 'sell' transaction in history
         db.execute(
-            'INSERT INTO history (product_id, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?)',
-            (id, g.user_id, product['price'], data['stock'], 'sell')
+            'INSERT INTO history (product_id, product_name, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?, ?)',
+            (id, product['name'], g.user_id, product['price'], data['stock'], 'sell')
         )
         
         db.commit()
@@ -193,11 +193,9 @@ def remove_stock(id):
 def get_history():
     db = get_db()
     history = db.execute('''
-        SELECT h.*, p.name as product_name 
-        FROM history h 
-        JOIN product p ON h.product_id = p.id 
-        WHERE h.user_id = ? 
-        ORDER BY h.created DESC
+        SELECT * FROM history 
+        WHERE user_id = ? 
+        ORDER BY created DESC
     ''', (g.user_id,)).fetchall()
 
     if not history:
@@ -217,11 +215,9 @@ def get_product_history(id):
     
     db = get_db()
     history = db.execute('''
-        SELECT h.*, p.name as product_name 
-        FROM history h 
-        JOIN product p ON h.product_id = p.id 
-        WHERE h.product_id = ? AND h.user_id = ? 
-        ORDER BY h.created DESC
+        SELECT * FROM history 
+        WHERE product_id = ? AND user_id = ? 
+        ORDER BY created DESC
     ''', (id, g.user_id)).fetchall()
 
     if not history:
