@@ -44,21 +44,21 @@ def create_app(test_config = None):
     from . import auth
     app.register_blueprint(auth.bp)
 
-                    from . import stock
-                app.register_blueprint(stock.bp, url_prefix='/stock')
-                
-                # Add a simple root endpoint
-                @app.route('/')
-                def index():
-                    return jsonify({'message': 'ShopTrack API is running'})
+    from . import stock
+    app.register_blueprint(stock.bp, url_prefix='/stock')
+    
+    # Add a simple root endpoint
+    @app.route('/')
+    def index():
+        return jsonify({'message': 'ShopTrack API is running'})
 
-                # Initialize database on startup
-                with app.app_context():
-                    try:
-                        from . import db
-                        db.init_db()
-                        app.logger.info("Database initialized successfully")
-                    except Exception as e:
-                        app.logger.warning(f"Database initialization failed: {e}")
+    # Initialize database on startup
+    with app.app_context():
+        try:
+            from . import db
+            db.init_db()
+            app.logger.info("Database initialized successfully")
+        except Exception as e:
+            app.logger.warning(f"Database initialization failed: {e}")
 
-                return app
+    return app
