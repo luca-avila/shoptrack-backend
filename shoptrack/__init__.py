@@ -46,6 +46,10 @@ def create_app(test_config = None):
 
     from . import stock
     app.register_blueprint(stock.bp, url_prefix='/stock')
-    app.add_url_rule('/', endpoint='index')
+    
+    # Add a simple root endpoint
+    @app.route('/')
+    def index():
+        return jsonify({'message': 'ShopTrack API is running'})
 
     return app
