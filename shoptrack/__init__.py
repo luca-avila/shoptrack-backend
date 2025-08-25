@@ -1,6 +1,7 @@
 import os
+import logging
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 
 def create_app(test_config = None):
@@ -26,6 +27,16 @@ def create_app(test_config = None):
     @app.route('/hello')
     def hello():
         return 'Hello, World!'    
+
+    # Add error handlers
+    @app.errorhandler(500)
+    def internal_error(error):
+        app.logger.error(f'Server Error: {error}')
+        return jsonify({'error': 'Internal server error'}), 500
+
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return jsonify({'error': 'Not found'}), 404
 
     from . import db
     db.init_app(app)

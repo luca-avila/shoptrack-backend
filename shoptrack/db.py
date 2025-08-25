@@ -18,16 +18,22 @@ def get_db():
         # Check if we're in production (PostgreSQL)
         database_url = os.environ.get('DATABASE_URL')
         
-        if database_url and POSTGRESQL_AVAILABLE:
-            # PostgreSQL connection
-            g.db = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
-        else:
-            # SQLite connection (development)
-            g.db = sqlite3.connect(
-                current_app.config['DATABASE'],
-                detect_types=sqlite3.PARSE_DECLTYPES
-            )
-            g.db.row_factory = sqlite3.Row
+        try:
+            if database_url and POSTGRESQL_AVAILABLE:
+                # PostgreSQL connection
+                g.db = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+                current_app.logger.info("Connected to PostgreSQL database")
+            else:
+                # SQLite connection (development)
+                g.db = sqlite3.connect(
+                    current_app.config['DATABASE'],
+                    detect_types=sqlite3.PARSE_DECLTYPES
+                )
+                g.db.row_factory = sqlite3.Row
+                current_app.logger.info("Connected to SQLite database")
+        except Exception as e:
+            current_app.logger.error(f"Database connection failed: {e}")
+            raise
     return g.db
 
 def close_db(e=None):
