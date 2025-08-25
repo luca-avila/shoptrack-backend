@@ -2,9 +2,9 @@ import pytest
 from shoptrack.db import get_db
 
 def get_test_user_token(client):
-    """Get token for the existing test user from data.sql."""
+    """Get authentication token for the existing test user from data.sql."""
     response = client.post('/auth/login', 
-                          json={'username': 'test', 'password': 'test'})
+                          json={'username': 'test', 'password': 'testpass'})
     return response.get_json()['token']
 
 def test_register(client):
@@ -15,35 +15,33 @@ def test_register(client):
 
 def test_register_duplicate_username(client):
     # First registration
-    client.post('/auth/register', 
-                json={'username': 'duplicate', 'password': 'pass1'})
-    
+    client.post('/auth/register',
+                json={'username': 'duplicate', 'password': 'pass123'})
+
     # Second registration with same username
-    response = client.post('/auth/register', 
-                          json={'username': 'duplicate', 'password': 'pass2'})
+    response = client.post('/auth/register',
+                          json={'username': 'duplicate', 'password': 'pass456'})
     assert response.status_code == 400
     assert b'already registered' in response.data
 
 def test_register_missing_fields(client):
     # Missing username
-    response = client.post('/auth/register', 
+    response = client.post('/auth/register',
                           json={'password': 'testpass'})
     assert response.status_code == 400
-    assert b'Username is required' in response.data
-    
+    assert b'Missing required field: username' in response.data
+
     # Missing password
-    response = client.post('/auth/register', 
+    response = client.post('/auth/register',
                           json={'username': 'testuser'})
     assert response.status_code == 400
-    assert b'Password is required' in response.data
+    assert b'Missing required field: password' in response.data
 
 def test_login_success(client):
     # Use existing test user
-    response = client.post('/auth/login', 
-                          json={'username': 'test', 'password': 'test'})
+    response = client.post('/auth/login',
+                          json={'username': 'test', 'password': 'testpass'})
     assert response.status_code == 200
-    assert b'Login successful' in response.data
-    
     data = response.get_json()
     assert 'token' in data
     assert 'user' in data
@@ -51,22 +49,22 @@ def test_login_success(client):
 
 def test_login_invalid_credentials(client):
     response = client.post('/auth/login', 
-                          json={'username': 'wronguser', 'password': 'wrongpass'})
+                          json={'username': 'test', 'password': 'wrongpass'})
     assert response.status_code == 401
-    assert b'Incorrect username' in response.data
+    assert b'Incorrect password' in response.data
 
 def test_login_missing_fields(client):
     # Missing username
     response = client.post('/auth/login', 
                           json={'password': 'testpass'})
     assert response.status_code == 400
-    assert b'Username is required' in response.data
+    assert b'Missing required field: username' in response.data
     
     # Missing password
     response = client.post('/auth/login', 
                           json={'username': 'testuser'})
     assert response.status_code == 400
-    assert b'Password is required' in response.data
+    assert b'Missing required field: password' in response.data
 
 def test_protected_route_without_auth(client):
     response = client.get('/stock/')

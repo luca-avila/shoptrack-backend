@@ -2,9 +2,9 @@ import pytest
 from shoptrack.db import get_db
 
 def get_test_user_token(client):
-    """Get token for the existing test user from data.sql."""
+    """Get authentication token for the existing test user from data.sql."""
     response = client.post('/auth/login', 
-                          json={'username': 'test', 'password': 'test'})
+                          json={'username': 'test', 'password': 'testpass'})
     return response.get_json()['token']
 
 def test_get_stock_with_auth(client):

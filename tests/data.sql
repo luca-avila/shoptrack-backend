@@ -1,11 +1,11 @@
 INSERT INTO user (username, password)
 VALUES
-  ('test', 'pbkdf2:sha256:50000$TCI4GzcX$0de171a4f4dac32e3364c7ddc7c14f3e2fa61f2d17574483f7ffbb431b4acb2f');
+  ('test', 'scrypt:32768:8:1$rgKhpTihDO4zcCCw$0537d1180edf057722094ceba47af4a2dec7ff355d50be5be6a23c5a766d43c08fb413421781b14a8989772b911d61590d584b4168c295bce306712b06907986');
 
 INSERT INTO product (name, stock, price, description, owner_id)
 VALUES
   ('Test Product', 10, 100, 'Test Description', 1);
 
-INSERT INTO history (product_id, user_id, price, quantity, action)
+INSERT INTO history (product_id, product_name, user_id, price, quantity, action)
 VALUES
-  (1, 1, 100, 10, 'buy');
+  (1, 'Test Product', 1, 100, 10, 'buy');
