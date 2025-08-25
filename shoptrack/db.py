@@ -22,6 +22,7 @@ def get_db():
             if database_url and POSTGRESQL_AVAILABLE:
                 # PostgreSQL connection
                 g.db = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+                g.db.is_postgresql = True
                 current_app.logger.info("Connected to PostgreSQL database")
             else:
                 # SQLite connection (development)
@@ -74,6 +75,11 @@ def init_db():
 def init_db_command():
     init_db()
     click.echo('Initialized the database.')
+
+def get_placeholder():
+    """Get the correct placeholder for the current database."""
+    database_url = os.environ.get('DATABASE_URL')
+    return '%s' if database_url and POSTGRESQL_AVAILABLE else '?'
 
 def init_app(app):
     app.teardown_appcontext(close_db)

@@ -1,9 +1,10 @@
+import os
 from flask import Blueprint, jsonify, request, g
 from shoptrack.auth import login_required
-from shoptrack.db import get_db
+from shoptrack.db import get_db, get_placeholder
 from shoptrack.validation import (
     validate_product_data, 
-    validate_product_ownership, 
+    validate_product_ownership,
     validate_stock_operation, 
     validate_json_request,
     validate_stock_data
@@ -15,7 +16,8 @@ bp = Blueprint('stock', __name__)
 @login_required
 def get_stock():
     db = get_db()
-    products = db.execute('SELECT * FROM product WHERE owner_id = ? ORDER BY created DESC', (g.user_id,)).fetchall()
+    placeholder = get_placeholder()
+    products = db.execute(f'SELECT * FROM product WHERE owner_id = {placeholder} ORDER BY created DESC', (g.user_id,)).fetchall()
 
     if not products:
         return jsonify({'error': 'No products found'}), 404
@@ -28,7 +30,8 @@ def get_stock():
 @login_required
 def get_product(id):
     db = get_db()
-    product = db.execute('SELECT * FROM product WHERE id = ? AND owner_id = ?', (id, g.user_id)).fetchone()
+    placeholder = get_placeholder()
+    product = db.execute(f'SELECT * FROM product WHERE id = {placeholder} AND owner_id = {placeholder}', (id, g.user_id)).fetchone()
 
     if not product:
         return jsonify({'error': 'Product not found'}), 404
@@ -52,16 +55,28 @@ def create_product():
     try:
         db = get_db()
         # Insert the product
-        cursor = db.execute(
-            'INSERT INTO product (name, stock, price, description, owner_id) VALUES (?, ?, ?, ?, ?)',
-            (data['name'], data['stock'], data['price'], data.get('description'), g.user_id)
-        )
-        product_id = cursor.lastrowid
+        placeholder = get_placeholder()
+        # Check if we're using PostgreSQL
+        database_url = os.environ.get('DATABASE_URL')
+        if database_url:
+            # PostgreSQL - use RETURNING
+            cursor = db.execute(
+                f'INSERT INTO product (name, stock, price, description, owner_id) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}) RETURNING id',
+                (data['name'], data['stock'], data['price'], data.get('description'), g.user_id)
+            )
+            product_id = cursor.fetchone()['id']
+        else:
+            # SQLite - use lastrowid
+            cursor = db.execute(
+                f'INSERT INTO product (name, stock, price, description, owner_id) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})',
+                (data['name'], data['stock'], data['price'], data.get('description'), g.user_id)
+            )
+            product_id = cursor.lastrowid
         
         # Record initial stock as a 'buy' transaction if stock > 0
         if data['stock'] > 0:
             db.execute(
-                'INSERT INTO history (product_id, product_name, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?, ?)',
+                f'INSERT INTO history (product_id, product_name, user_id, price, quantity, action) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})',
                 (product_id, data['name'], g.user_id, data['price'], data['stock'], 'buy')
             )
         
@@ -89,8 +104,9 @@ def update_product(id):
     
     try:
         db = get_db()
+        placeholder = get_placeholder()
         db.execute(
-            'UPDATE product SET name = ?, stock = ?, price = ?, description = ? WHERE id = ? AND owner_id = ?',
+            f'UPDATE product SET name = {placeholder}, stock = {placeholder}, price = {placeholder}, description = {placeholder} WHERE id = {placeholder} AND owner_id = {placeholder}',
             (data['name'], data['stock'], data['price'], data.get('description'), id, g.user_id)
         )
         db.commit()
@@ -107,8 +123,9 @@ def delete_product(id):
     
     try:
         db = get_db()
+        placeholder = get_placeholder()
         db.execute(
-            'DELETE FROM product WHERE id = ? AND owner_id = ?',
+            f'DELETE FROM product WHERE id = {placeholder} AND owner_id = {placeholder}',
             (id, g.user_id)
         )
         db.commit()
@@ -136,14 +153,15 @@ def add_stock(id):
     try:
         db = get_db()
         # Update stock
+        placeholder = get_placeholder()
         db.execute(
-            'UPDATE product SET stock = stock + ? WHERE id = ? AND owner_id = ?',
+            f'UPDATE product SET stock = stock + {placeholder} WHERE id = {placeholder} AND owner_id = {placeholder}',
             (data['stock'], id, g.user_id)
         )
         
         # Record 'buy' transaction in history
         db.execute(
-            'INSERT INTO history (product_id, product_name, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?, ?)',
+            f'INSERT INTO history (product_id, product_name, user_id, price, quantity, action) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})',
             (id, product['name'], g.user_id, product['price'], data['stock'], 'buy')
         )
         
@@ -172,14 +190,15 @@ def remove_stock(id):
     try:
         db = get_db()
         # Update stock
+        placeholder = get_placeholder()
         db.execute(
-            'UPDATE product SET stock = stock - ? WHERE id = ? AND owner_id = ?',
+            f'UPDATE product SET stock = stock - {placeholder} WHERE id = {placeholder} AND owner_id = {placeholder}',
             (data['stock'], id, g.user_id)
         )
         
         # Record 'sell' transaction in history
         db.execute(
-            'INSERT INTO history (product_id, product_name, user_id, price, quantity, action) VALUES (?, ?, ?, ?, ?, ?)',
+            f'INSERT INTO history (product_id, product_name, user_id, price, quantity, action) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})',
             (id, product['name'], g.user_id, product['price'], data['stock'], 'sell')
         )
         
@@ -192,9 +211,10 @@ def remove_stock(id):
 @login_required
 def get_history():
     db = get_db()
-    history = db.execute('''
+    placeholder = get_placeholder()
+    history = db.execute(f'''
         SELECT * FROM history 
-        WHERE user_id = ? 
+        WHERE user_id = {placeholder} 
         ORDER BY created DESC
     ''', (g.user_id,)).fetchall()
 
@@ -214,9 +234,10 @@ def get_product_history(id):
         return jsonify({'error': product}), 404
     
     db = get_db()
-    history = db.execute('''
+    placeholder = get_placeholder()
+    history = db.execute(f'''
         SELECT * FROM history 
-        WHERE product_id = ? AND user_id = ? 
+        WHERE product_id = {placeholder} AND user_id = {placeholder} 
         ORDER BY created DESC
     ''', (id, g.user_id)).fetchall()
 
