@@ -57,9 +57,7 @@ def init_db():
         sql_script = f.read().decode('utf8')
         
         # Check if we're using PostgreSQL
-        if hasattr(db, 'execute'):  # SQLite
-            db.executescript(sql_script)
-        else:  # PostgreSQL
+        if getattr(db, 'is_postgresql', False):  # PostgreSQL
             # Convert schema for PostgreSQL
             sql_script = convert_schema_for_postgresql(sql_script)
             # Split SQL statements and execute one by one
@@ -70,6 +68,8 @@ def init_db():
                 if statement:
                     cursor.execute(statement)
             db.commit()
+        else:  # SQLite
+            db.executescript(sql_script)
 
 @click.command('init-db')
 def init_db_command():
