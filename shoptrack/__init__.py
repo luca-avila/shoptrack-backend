@@ -52,13 +52,4 @@ def create_app(test_config = None):
     def index():
         return jsonify({'message': 'ShopTrack API is running'})
 
-    # Initialize database on startup
-    with app.app_context():
-        try:
-            from . import db
-            db.init_db()
-            app.logger.info("Database initialized successfully")
-        except Exception as e:
-            app.logger.warning(f"Database initialization failed: {e}")
-
     return app
