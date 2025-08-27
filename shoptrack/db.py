@@ -18,22 +18,38 @@ def get_db():
         # Check if we're in production (PostgreSQL)
         database_url = os.environ.get('DATABASE_URL')
         
+        # Debug logging
+        current_app.logger.info(f"=== DATABASE CONNECTION DEBUG ===")
+        current_app.logger.info(f"DATABASE_URL exists: {database_url is not None}")
+        current_app.logger.info(f"POSTGRESQL_AVAILABLE: {POSTGRESQL_AVAILABLE}")
+        
+        if not database_url:
+            current_app.logger.error("❌ NO DATABASE_URL - check environment variables!")
+            current_app.logger.error("Falling back to SQLite (this will cause errors)")
+        
         try:
             if database_url and POSTGRESQL_AVAILABLE:
                 # PostgreSQL connection
+                current_app.logger.info(f"Attempting PostgreSQL connection: {database_url[:30]}...")
                 g.db = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
                 g.db.is_postgresql = True
-                current_app.logger.info("Connected to PostgreSQL database")
+                current_app.logger.info("✅ Connected to PostgreSQL database (Supabase)")
             else:
+                if not database_url:
+                    current_app.logger.error("❌ DATABASE_URL not set - using SQLite fallback")
+                if not POSTGRESQL_AVAILABLE:
+                    current_app.logger.error("❌ psycopg2 not available - using SQLite fallback")
+                
                 # SQLite connection (development)
                 g.db = sqlite3.connect(
                     current_app.config['DATABASE'],
                     detect_types=sqlite3.PARSE_DECLTYPES
                 )
                 g.db.row_factory = sqlite3.Row
-                current_app.logger.info("Connected to SQLite database")
+                current_app.logger.warning("⚠️ Connected to SQLite database (development mode)")
         except Exception as e:
-            current_app.logger.error(f"Database connection failed: {e}")
+            current_app.logger.error(f"❌ Database connection failed: {e}")
+            current_app.logger.error(f"Error type: {type(e).__name__}")
             raise
     return g.db
 
