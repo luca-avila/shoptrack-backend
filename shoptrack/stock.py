@@ -128,7 +128,11 @@ def delete_product(id):
         get_db().commit()
         return jsonify({'message': 'Product deleted successfully.'}), 200
     except Exception as e:
-        return jsonify({'error': 'Failed to delete product'}), 500
+        # Add detailed error logging
+        import traceback
+        print(f"Delete product error: {e}")
+        print(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'error': f'Failed to delete product: {str(e)}'}), 500
 
 @bp.route('/<int:id>/stock', methods=['POST'])
 @login_required

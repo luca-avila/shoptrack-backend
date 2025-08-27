@@ -30,7 +30,7 @@ CREATE TABLE history (
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     action TEXT NOT NULL CHECK (action IN ('buy', 'sell')),
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES product (id),
+    FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES user (id)
 );
 
