@@ -10,8 +10,10 @@ try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
     POSTGRESQL_AVAILABLE = True
-except ImportError:
+    print(f"✅ psycopg2 imported successfully, version: {psycopg2.__version__}")
+except ImportError as e:
     POSTGRESQL_AVAILABLE = False
+    print(f"❌ psycopg2 import failed: {e}")
 
 def get_db():
     if 'db' not in g:
@@ -22,6 +24,7 @@ def get_db():
         current_app.logger.info(f"=== DATABASE CONNECTION DEBUG ===")
         current_app.logger.info(f"DATABASE_URL exists: {database_url is not None}")
         current_app.logger.info(f"POSTGRESQL_AVAILABLE: {POSTGRESQL_AVAILABLE}")
+        current_app.logger.info(f"psycopg2 import status: {POSTGRESQL_AVAILABLE}")
         
         if not database_url:
             current_app.logger.error("❌ NO DATABASE_URL - check environment variables!")
