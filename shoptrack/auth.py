@@ -31,17 +31,14 @@ def login_required(f):
         
         token = auth_header.split(' ')[1]
         
-        if not Token(token).verify():
-            return jsonify({'error': 'Unauthorized'}), 401
-        
-        # Get the user ID from the session and set it on g
+        # Verify token and get user ID
         placeholder = get_placeholder()
         cursor = execute_query(f'SELECT user_id FROM sessions WHERE id = {placeholder}', (token,))
         session = cursor.fetchone()
-        if session:
-            g.user_id = session['user_id']
-        else:
+        if not session:
             return jsonify({'error': 'Unauthorized'}), 401
+        
+        g.user_id = session['user_id']
         
         return f(*args, **kwargs)
     return decorated_function
@@ -59,6 +56,9 @@ class Token:
         if session is None:
             return False
         if session['expires'] < datetime.now():
+            # Clean up expired session
+            execute_query(f'DELETE FROM sessions WHERE id = {placeholder}', (self.token,))
+            get_db().commit()
             return False
         return True
     
