@@ -130,7 +130,7 @@ def delete_product(id):
     except Exception as e:
         return jsonify({'error': 'Failed to delete product'}), 500
 
-@bp.route('/<int:id>/stock', methods=['POST'])
+@bp.route('/<int:id>/stock/add', methods=['PATCH'])
 @login_required
 def add_stock(id):
     is_valid, result = validate_json_request()
@@ -166,7 +166,7 @@ def add_stock(id):
     except Exception as e:
         return jsonify({'error': 'Failed to add stock'}), 500
 
-@bp.route('/<int:id>/stock', methods=['DELETE'])
+@bp.route('/<int:id>/stock/remove', methods=['PATCH'])
 @login_required
 def remove_stock(id):
     is_valid, result = validate_json_request()
