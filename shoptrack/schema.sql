@@ -23,14 +23,13 @@ CREATE TABLE product (
 
 CREATE TABLE history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INTEGER NOT NULL,
+    product_id INTEGER,
     product_name TEXT NOT NULL,
     user_id INTEGER NOT NULL,
     price REAL NOT NULL CHECK (price > 0),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     action TEXT NOT NULL CHECK (action IN ('buy', 'sell')),
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES user (id)
 );
 
