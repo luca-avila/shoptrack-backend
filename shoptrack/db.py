@@ -35,7 +35,7 @@ def get_db():
                 # PostgreSQL connection
                 current_app.logger.info(f"Attempting PostgreSQL connection: {database_url[:30]}...")
                 g.db = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
-                g.db.is_postgresql = True
+                g.is_postgresql = True  # Store in g instead of on connection
                 current_app.logger.info("✅ Connected to PostgreSQL database (Supabase)")
             else:
                 if not database_url:
@@ -49,6 +49,7 @@ def get_db():
                     detect_types=sqlite3.PARSE_DECLTYPES
                 )
                 g.db.row_factory = sqlite3.Row
+                g.is_postgresql = False  # Store in g instead of on connection
                 current_app.logger.warning("⚠️ Connected to SQLite database (development mode)")
         except Exception as e:
             current_app.logger.error(f"❌ Database connection failed: {e}")
@@ -76,7 +77,7 @@ def init_db():
         sql_script = f.read().decode('utf8')
         
         # Check if we're using PostgreSQL
-        if getattr(db, 'is_postgresql', False):  # PostgreSQL
+        if getattr(g, 'is_postgresql', False):  # PostgreSQL
             # Convert schema for PostgreSQL
             sql_script = convert_schema_for_postgresql(sql_script)
             # Split SQL statements and execute one by one
