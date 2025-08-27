@@ -2,71 +2,41 @@
 
 A modern Flask-based inventory management system with authentication, stock tracking, and transaction history. Built using the Flask factory pattern for clean, modular architecture.
 
-## 🚀 Features
+## 🚀 Live Demo
 
-- **User Authentication** - Secure token-based authentication
-- **Product Management** - Create, read, update, and delete products
-- **Stock Tracking** - Add and remove inventory with automatic history
-- **Transaction History** - Complete audit trail of all stock operations
-- **Input Validation** - Comprehensive data validation and error handling
-- **RESTful API** - Clean, consistent API design
-- **Database Security** - SQL injection protection and ownership validation
+**Try ShopTrack right now!** Visit my live demo at: **[https://shop-track-one.vercel.app/](https://shop-track-one.vercel.app/)**
 
-## 📋 Prerequisites
+The demo includes all features:
+- User registration and authentication
+- Product management (create, read, update, delete)
+- Real-time stock tracking
+- Complete transaction history
+- RESTful API endpoints
 
-- Python 3.8 or higher
-- pip (Python package installer)
+## ✨ Features
 
-## 🛠️ Installation
+- **🔐 User Authentication** - Secure token-based authentication with session management
+- **📦 Product Management** - Create, read, update, and delete products with full CRUD operations
+- **📊 Stock Tracking** - Add and remove inventory with automatic history tracking
+- **📈 Transaction History** - Complete audit trail of all stock operations with timestamps
+- **✅ Input Validation** - Comprehensive data validation and error handling
+- **🌐 RESTful API** - Clean, consistent API design following REST principles
+- **🛡️ Database Security** - SQL injection protection and ownership validation
+- **🔒 Multi-User Support** - Each user can only access their own data
+- **📱 CORS Enabled** - Ready for frontend integration
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd shoptrack-factory-v2
-   ```
+## 🛠️ Technology Stack
 
-2. **Create a virtual environment**
-   ```bash
-   python -m venv env
-   source env/bin/activate  # On Windows: env\Scripts\activate
-   ```
-
-3. **Install the project**
-   ```bash
-   pip install -e .
-   ```
-
-4. **Initialize the database**
-   ```bash
-   flask init-db
-   ```
-
-## 🏃‍♂️ Running the Application
-
-### Development Mode
-```bash
-# Set Flask environment
-export FLASK_APP=shoptrack
-export FLASK_ENV=development
-
-# Run the application
-flask run
-```
-
-The application will be available at `http://localhost:5000`
-
-### Production Mode
-```bash
-# Set production environment
-export FLASK_ENV=production
-
-# Run with production server (e.g., gunicorn)
-gunicorn -w 4 -b 0.0.0.0:5000 "shoptrack:create_app()"
-```
+- **Backend**: Flask 3.1.1 with Factory Pattern
+- **Database**: PostgreSQL (production) / SQLite (development)
+- **Authentication**: Custom token-based system with Werkzeug password hashing
+- **Deployment**: Vercel with Gunicorn
+- **Testing**: pytest with comprehensive test coverage
+- **CORS**: flask-cors for cross-origin requests
 
 ## 📚 API Documentation
 
-### Authentication
+### Authentication Endpoints
 
 #### Register User
 ```http
@@ -76,13 +46,6 @@ Content-Type: application/json
 {
   "username": "newuser",
   "password": "securepassword"
-}
-```
-
-**Response:**
-```json
-{
-  "message": "User registered successfully."
 }
 ```
 
@@ -120,27 +83,6 @@ Authorization: Bearer your-auth-token
 #### Get All Products
 ```http
 GET /stock/
-Authorization: Bearer your-auth-token
-```
-
-**Response:**
-```json
-[
-  {
-    "id": 1,
-    "name": "Product Name",
-    "stock": 10,
-    "price": 29.99,
-    "description": "Product description",
-    "owner_id": 1,
-    "created": "2024-01-01T12:00:00"
-  }
-]
-```
-
-#### Get Single Product
-```http
-GET /stock/{id}
 Authorization: Bearer your-auth-token
 ```
 
@@ -216,32 +158,6 @@ GET /stock/{id}/history
 Authorization: Bearer your-auth-token
 ```
 
-## 🧪 Testing
-
-### Running Tests
-```bash
-# Install test dependencies
-pip install pytest pytest-flask
-
-# Run all tests
-pytest
-
-# Run with verbose output
-pytest -v
-
-# Run specific test file
-pytest tests/test_auth.py
-
-# Run with coverage
-pytest --cov=shoptrack
-```
-
-### Test Structure
-- `tests/test_auth.py` - Authentication tests
-- `tests/test_stock.py` - Product and stock management tests
-- `tests/conftest.py` - Test configuration and fixtures
-- `tests/data.sql` - Test data setup
-
 ## 🏗️ Project Structure
 
 ```
@@ -259,46 +175,90 @@ shoptrack-factory-v2/
 │   ├── test_stock.py         # Stock management tests
 │   └── data.sql              # Test data
 ├── instance/                 # Instance-specific files
-├── pyproject.toml           # Project configuration
+├── requirements.txt          # Python dependencies
+├── Procfile                  # Heroku/Vercel deployment
+├── runtime.txt               # Python runtime version
 └── README.md                # This file
 ```
+
+## 🧪 Testing
+
+The project includes comprehensive tests covering all functionality:
+
+```bash
+# Run all tests
+pytest
+
+# Run with verbose output
+pytest -v
+
+# Run with coverage
+pytest --cov=shoptrack
+```
+
+### Test Coverage
+- **Authentication Tests** (`test_auth.py`) - User registration, login, logout
+- **Stock Management Tests** (`test_stock.py`) - Product CRUD operations
+- **Database Tests** (`test_db.py`) - Database connection and utilities
+- **Factory Tests** (`test_factory.py`) - Application factory pattern
 
 ## 🔧 Configuration
 
 ### Environment Variables
 - `FLASK_ENV` - Set to `development` or `production`
-- `SECRET_KEY` - Flask secret key (auto-generated in development)
-- `DATABASE` - Database file path (defaults to `instance/shoptrack.sqlite`)
+- `SECRET_KEY` - Flask secret key for session security
+- `DATABASE_URL` - PostgreSQL connection string (production)
+- `DATABASE` - SQLite database file path (development)
 
 ### Database Schema
-The application uses SQLite with the following tables:
+The application uses a relational database with the following tables:
 - `user` - User accounts and authentication
-- `product` - Product inventory
-- `history` - Transaction history
-- `sessions` - Authentication sessions
+- `product` - Product inventory with ownership
+- `history` - Transaction history with timestamps
+- `sessions` - Authentication sessions with expiration
 
 ## 🛡️ Security Features
 
-- **Token-based Authentication** - Secure JWT-like tokens
-- **Input Validation** - Comprehensive data validation
-- **SQL Injection Protection** - Parameterized queries
-- **Ownership Validation** - Users can only access their own data
-- **Password Hashing** - Secure password storage with Werkzeug
+- **🔐 Token-based Authentication** - Secure session management with expiration
+- **🔒 Password Hashing** - Secure password storage using Werkzeug
+- **🛡️ Input Validation** - Comprehensive data validation and sanitization
+- **💉 SQL Injection Protection** - Parameterized queries throughout
+- **👤 Ownership Validation** - Users can only access their own data
+- **🔑 CORS Configuration** - Secure cross-origin request handling
 
-## 🚀 Development
+## 🚀 Development Setup
 
-### Adding New Features
-1. Create new blueprint in `shoptrack/`
-2. Register blueprint in `shoptrack/__init__.py`
-3. Add validation functions in `shoptrack/validation.py`
-4. Write tests in `tests/`
-5. Update this README
+For developers who want to run the project locally:
 
-### Code Style
-- Follow PEP 8 guidelines
-- Use meaningful variable and function names
-- Add docstrings to all functions
-- Write comprehensive tests
+### Prerequisites
+- Python 3.8 or higher
+- pip (Python package installer)
+
+### Quick Start
+```bash
+# Clone the repository
+git clone <repository-url>
+cd shoptrack-factory-v2
+
+# Create virtual environment
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set environment
+export FLASK_APP=shoptrack
+export FLASK_ENV=development
+
+# Initialize database
+flask init-db
+
+# Run the application
+flask run
+```
+
+The application will be available at `http://localhost:5000`
 
 ## 📝 License
 
@@ -307,12 +267,15 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📞 Support
 
-For questions or issues, please open an issue on the project repository.
+For questions, issues, or feature requests, please open an issue on the project repository.
+
+---
+
+**Ready to try ShopTrack?** Visit **[https://shop-track-one.vercel.app/](https://shop-track-one.vercel.app/)** to start managing your inventory today!
