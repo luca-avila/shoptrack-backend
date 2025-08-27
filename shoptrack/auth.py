@@ -85,7 +85,7 @@ def login():
         return jsonify({'error': error}), 400
     
     placeholder = get_placeholder()
-    cursor = execute_query(f'SELECT * FROM "user" WHERE username = {placeholder}', (data['username'],))
+    cursor = execute_query(f'SELECT * FROM "user" WHERE LOWER(username) = LOWER({placeholder})', (data['username'],))
     user = cursor.fetchone()
     if user is None:
         return jsonify({'error': 'Incorrect username.'}), 401

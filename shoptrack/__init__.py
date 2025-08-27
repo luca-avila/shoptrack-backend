@@ -47,7 +47,7 @@ def create_app(test_config = None):
     app.register_blueprint(auth.bp)
 
     from . import stock
-    app.register_blueprint(stock.bp, url_prefix='/stock')
+    app.register_blueprint(stock.bp)
     
     # Add a simple root endpoint
     @app.route('/')

@@ -10,7 +10,7 @@ from shoptrack.validation import (
     validate_stock_data
 )
 
-bp = Blueprint('stock', __name__)
+bp = Blueprint('stock', __name__, url_prefix='/stock')
 
 @bp.route('/', methods=['GET'])
 @login_required
