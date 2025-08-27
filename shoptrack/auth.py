@@ -22,6 +22,30 @@ except ImportError:
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+def login_required(f):
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Invalid authorization header'}), 401
+        
+        token = auth_header.split(' ')[1]
+        
+        if not Token(token).verify():
+            return jsonify({'error': 'Unauthorized'}), 401
+        
+        # Get the user ID from the session and set it on g
+        placeholder = get_placeholder()
+        cursor = execute_query(f'SELECT user_id FROM sessions WHERE id = {placeholder}', (token,))
+        session = cursor.fetchone()
+        if session:
+            g.user_id = session['user_id']
+        else:
+            return jsonify({'error': 'Unauthorized'}), 401
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
 class Token:
     def __init__(self, token=None):
         self.token = token
@@ -112,41 +136,12 @@ def login():
     }), 200
 
 @bp.route('/logout', methods=['POST'])
+@login_required
 def logout():
     auth_header = request.headers.get('Authorization')
-    if not auth_header or not auth_header.startswith('Bearer '):
-        return jsonify({'error': 'Invalid authorization header'}), 401
-    
     token = auth_header.split(' ')[1]
-    
-    if not Token(token).verify():
-        return jsonify({'error': 'Unauthorized'}), 401
     
     placeholder = get_placeholder()
     execute_query(f'DELETE FROM sessions WHERE id = {placeholder}', (token,))
     get_db().commit()
     return jsonify({'message': 'Logged out successfully.'}), 200
-    
-def login_required(f):
-    @functools.wraps(f)
-    def decorated_function(*args, **kwargs):
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({'error': 'Invalid authorization header'}), 401
-        
-        token = auth_header.split(' ')[1]
-        
-        if not Token(token).verify():
-            return jsonify({'error': 'Unauthorized'}), 401
-        
-        # Get the user ID from the session and set it on g
-        placeholder = get_placeholder()
-        cursor = execute_query(f'SELECT user_id FROM sessions WHERE id = {placeholder}', (token,))
-        session = cursor.fetchone()
-        if session:
-            g.user_id = session['user_id']
-        else:
-            return jsonify({'error': 'Unauthorized'}), 401
-        
-        return f(*args, **kwargs)
-    return decorated_function
