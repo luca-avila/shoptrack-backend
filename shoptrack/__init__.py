@@ -24,19 +24,7 @@ def create_app(test_config = None):
     except OSError:
         pass
 
-    # Debug psycopg2 availability
-    try:
-        import psycopg2
-        app.logger.info("✅ psycopg2 import successful")
-        app.logger.info(f"psycopg2 version: {psycopg2.__version__}")
-    except ImportError as e:
-        app.logger.error(f"❌ psycopg2 import failed: {e}")
-    
-    try:
-        from psycopg2.extras import RealDictCursor
-        app.logger.info("✅ RealDictCursor import successful")
-    except ImportError as e:
-        app.logger.error(f"❌ RealDictCursor import failed: {e}")
+
 
     @app.route('/hello')
     def hello():

@@ -10,50 +10,32 @@ try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
     POSTGRESQL_AVAILABLE = True
-    print(f"✅ psycopg2 imported successfully, version: {psycopg2.__version__}")
+
 except ImportError as e:
     POSTGRESQL_AVAILABLE = False
-    print(f"❌ psycopg2 import failed: {e}")
+
 
 def get_db():
     if 'db' not in g:
         # Check if we're in production (PostgreSQL)
         database_url = os.environ.get('DATABASE_URL')
         
-        # Debug logging
-        current_app.logger.info(f"=== DATABASE CONNECTION DEBUG ===")
-        current_app.logger.info(f"DATABASE_URL exists: {database_url is not None}")
-        current_app.logger.info(f"POSTGRESQL_AVAILABLE: {POSTGRESQL_AVAILABLE}")
-        current_app.logger.info(f"psycopg2 import status: {POSTGRESQL_AVAILABLE}")
-        
-        if not database_url:
-            current_app.logger.error("❌ NO DATABASE_URL - check environment variables!")
-            current_app.logger.error("Falling back to SQLite (this will cause errors)")
+
         
         try:
             if database_url and POSTGRESQL_AVAILABLE:
                 # PostgreSQL connection
-                current_app.logger.info(f"Attempting PostgreSQL connection: {database_url[:30]}...")
                 g.db = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
-                g.is_postgresql = True  # Store in g instead of on connection
-                current_app.logger.info("✅ Connected to PostgreSQL database (Supabase)")
+                g.is_postgresql = True
             else:
-                if not database_url:
-                    current_app.logger.error("❌ DATABASE_URL not set - using SQLite fallback")
-                if not POSTGRESQL_AVAILABLE:
-                    current_app.logger.error("❌ psycopg2 not available - using SQLite fallback")
-                
                 # SQLite connection (development)
                 g.db = sqlite3.connect(
                     current_app.config['DATABASE'],
                     detect_types=sqlite3.PARSE_DECLTYPES
                 )
                 g.db.row_factory = sqlite3.Row
-                g.is_postgresql = False  # Store in g instead of on connection
-                current_app.logger.warning("⚠️ Connected to SQLite database (development mode)")
+                g.is_postgresql = False
         except Exception as e:
-            current_app.logger.error(f"❌ Database connection failed: {e}")
-            current_app.logger.error(f"Error type: {type(e).__name__}")
             raise
     return g.db
 
