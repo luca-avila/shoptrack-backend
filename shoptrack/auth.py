@@ -61,7 +61,7 @@ def register():
     try:
         placeholder = get_placeholder()
         execute_query(
-            f'INSERT INTO user (username, password) VALUES ({placeholder}, {placeholder})',
+            f'INSERT INTO "user" (username, password) VALUES ({placeholder}, {placeholder})',
             (data['username'], generate_password_hash(data['password']))
         )
         get_db().commit()
@@ -85,7 +85,7 @@ def login():
         return jsonify({'error': error}), 400
     
     placeholder = get_placeholder()
-    cursor = execute_query(f'SELECT * FROM user WHERE username = {placeholder}', (data['username'],))
+    cursor = execute_query(f'SELECT * FROM "user" WHERE username = {placeholder}', (data['username'],))
     user = cursor.fetchone()
     if user is None:
         return jsonify({'error': 'Incorrect username.'}), 401

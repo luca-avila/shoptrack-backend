@@ -81,6 +81,14 @@ def convert_schema_for_postgresql(sql_script):
     # Replace SQLite-specific syntax with PostgreSQL syntax
     sql_script = sql_script.replace('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')
     sql_script = sql_script.replace('DEFAULT CURRENT_TIMESTAMP', 'DEFAULT NOW()')
+    sql_script = sql_script.replace('REAL', 'DECIMAL(10,2)')
+    sql_script = sql_script.replace('TEXT', 'VARCHAR(255)')
+    
+    # Quote reserved keywords - 'user' is a reserved keyword in PostgreSQL
+    sql_script = sql_script.replace('DROP TABLE IF EXISTS user', 'DROP TABLE IF EXISTS "user"')
+    sql_script = sql_script.replace('CREATE TABLE user', 'CREATE TABLE "user"')
+    sql_script = sql_script.replace('REFERENCES user', 'REFERENCES "user"')
+    
     return sql_script
 
 def init_db():
