@@ -1,5 +1,5 @@
 from flask import jsonify, g, request
-from shoptrack.db import get_db, get_placeholder
+from shoptrack.db import get_db, get_placeholder, execute_query
 
 def validate_product_data(data, required_fields=None):
     if required_fields is None:
@@ -27,12 +27,12 @@ def validate_product_data(data, required_fields=None):
     return True, None
 
 def validate_product_ownership(product_id):
-    db = get_db()
     placeholder = get_placeholder()
-    product = db.execute(
+    cursor = execute_query(
         f'SELECT * FROM product WHERE id = {placeholder} AND owner_id = {placeholder}', 
         (product_id, g.user_id)
-    ).fetchone()
+    )
+    product = cursor.fetchone()
     
     if not product:
         return False, "Product not found or access denied"

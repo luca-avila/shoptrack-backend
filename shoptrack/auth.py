@@ -9,7 +9,7 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from shoptrack.db import get_db, get_placeholder
+from shoptrack.db import get_db, get_placeholder, execute_query
 from shoptrack.validation import validate_user_data, validate_json_request
 
 # Import PostgreSQL error if available
@@ -29,9 +29,9 @@ class Token:
     def verify(self):
         if not self.token:
             return False
-        db = get_db()
         placeholder = get_placeholder()
-        session = db.execute(f'SELECT * FROM sessions WHERE id = {placeholder}', (self.token,)).fetchone()
+        cursor = execute_query(f'SELECT * FROM sessions WHERE id = {placeholder}', (self.token,))
+        session = cursor.fetchone()
         if session is None:
             return False
         if session['expires'] < datetime.now():
@@ -60,11 +60,11 @@ def register():
     
     try:
         placeholder = get_placeholder()
-        db.execute(
+        execute_query(
             f'INSERT INTO user (username, password) VALUES ({placeholder}, {placeholder})',
             (data['username'], generate_password_hash(data['password']))
         )
-        db.commit()
+        get_db().commit()
     except (sqlite3.IntegrityError, PostgresIntegrityError) if POSTGRESQL_AVAILABLE else sqlite3.IntegrityError:
         error = f"User {data['username']} is already registered."
         return jsonify({'error': error}), 400
@@ -84,10 +84,9 @@ def login():
     if not is_valid:
         return jsonify({'error': error}), 400
     
-    db = get_db()
-
     placeholder = get_placeholder()
-    user = db.execute(f'SELECT * FROM user WHERE username = {placeholder}', (data['username'],)).fetchone()
+    cursor = execute_query(f'SELECT * FROM user WHERE username = {placeholder}', (data['username'],))
+    user = cursor.fetchone()
     if user is None:
         return jsonify({'error': 'Incorrect username.'}), 401
     
@@ -97,11 +96,11 @@ def login():
     token = Token().generate()
     
     placeholder = get_placeholder()
-    db.execute(
+    execute_query(
         f'INSERT INTO sessions (id, user_id, expires) VALUES ({placeholder}, {placeholder}, {placeholder})',
         (token, user['id'], datetime.now() + timedelta(days=30))
     )
-    db.commit()
+    get_db().commit()
     
     return jsonify({
         'message': 'Login successful',
@@ -123,10 +122,9 @@ def logout():
     if not Token(token).verify():
         return jsonify({'error': 'Unauthorized'}), 401
     
-    db = get_db()
     placeholder = get_placeholder()
-    db.execute(f'DELETE FROM sessions WHERE id = {placeholder}', (token,))
-    db.commit()
+    execute_query(f'DELETE FROM sessions WHERE id = {placeholder}', (token,))
+    get_db().commit()
     return jsonify({'message': 'Logged out successfully.'}), 200
     
 def login_required(f):
@@ -142,9 +140,9 @@ def login_required(f):
             return jsonify({'error': 'Unauthorized'}), 401
         
         # Get the user ID from the session and set it on g
-        db = get_db()
         placeholder = get_placeholder()
-        session = db.execute(f'SELECT user_id FROM sessions WHERE id = {placeholder}', (token,)).fetchone()
+        cursor = execute_query(f'SELECT user_id FROM sessions WHERE id = {placeholder}', (token,))
+        session = cursor.fetchone()
         if session:
             g.user_id = session['user_id']
         else:

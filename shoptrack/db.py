@@ -57,6 +57,19 @@ def get_db():
             raise
     return g.db
 
+def execute_query(query, params=None):
+    """Execute a query and return results, handling both SQLite and PostgreSQL"""
+    db = get_db()
+    
+    if getattr(g, 'is_postgresql', False):
+        # PostgreSQL - use cursor
+        cursor = db.cursor()
+        cursor.execute(query, params)
+        return cursor
+    else:
+        # SQLite - execute directly on connection
+        return db.execute(query, params)
+
 def close_db(e=None):
     db = g.pop('db', None)
 
