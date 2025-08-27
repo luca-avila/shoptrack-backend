@@ -2,6 +2,8 @@
 
 A modern Flask-based inventory management system with authentication, stock tracking, and transaction history. Built using the Flask factory pattern for clean, modular architecture.
 
+https://shop-track-one.vercel.app/
+
 ## 🚀 Features
 
 - **User Authentication** - Secure token-based authentication
