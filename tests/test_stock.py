@@ -56,23 +56,23 @@ def test_create_product_invalid_data(client):
 def test_add_stock(client):
     token = get_test_user_token(client)
     headers = {'Authorization': f'Bearer {token}'}
-    
+
     # Use existing test product (ID 1 from data.sql)
     stock_data = {'stock': 5}
-    response = client.post('/stock/1/stock', 
-                          json=stock_data, 
-                          headers=headers)
+    response = client.patch('/stock/1/stock/add',
+                           json=stock_data,
+                           headers=headers)
     assert response.status_code == 200
     assert b'Stock added successfully' in response.data
 
 def test_remove_stock(client):
     token = get_test_user_token(client)
     headers = {'Authorization': f'Bearer {token}'}
-    
+
     # Use existing test product (ID 1 from data.sql)
     stock_data = {'stock': 3}
-    response = client.delete('/stock/1/stock', 
-                            json=stock_data, 
+    response = client.patch('/stock/1/stock/remove',
+                            json=stock_data,
                             headers=headers)
     assert response.status_code == 200
     assert b'Stock removed successfully' in response.data

@@ -1,4 +1,4 @@
-from flask import jsonify, g, request
+from flask import g, request
 from shoptrack.db import get_db, get_placeholder, execute_query
 
 def validate_product_data(data, required_fields=None):

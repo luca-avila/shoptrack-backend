@@ -124,7 +124,7 @@ Authorization: Bearer your-auth-token
 
 #### Add Stock
 ```http
-POST /stock/{id}/stock
+PATCH /stock/{id}/stock/add
 Authorization: Bearer your-auth-token
 Content-Type: application/json
 
@@ -135,7 +135,7 @@ Content-Type: application/json
 
 #### Remove Stock
 ```http
-DELETE /stock/{id}/stock
+PATCH /stock/{id}/stock/remove
 Authorization: Bearer your-auth-token
 Content-Type: application/json
 
